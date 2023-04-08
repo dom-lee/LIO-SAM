@@ -19,6 +19,7 @@ find_package(catkin REQUIRED COMPONENTS
   nav_msgs
   message_generation
   visualization_msgs
+  jsk_recognition_msgs
 )
 
 find_package(OpenMP REQUIRED)

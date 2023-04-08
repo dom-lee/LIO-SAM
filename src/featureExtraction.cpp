@@ -1,5 +1,10 @@
 #include "utility.h"
 #include "lio_sam/cloud_info.h"
+#include <jsk_recognition_msgs/BoundingBoxArray.h>
+#include <tf2/LinearMath/Quaternion.h>
+#include <tf2/LinearMath/Matrix3x3.h>
+#include <geometry_msgs/Quaternion.h>
+#include <pcl/common/transforms.h>
 
 struct smoothness_t{ 
     float value;
@@ -18,6 +23,7 @@ class FeatureExtraction : public ParamServer
 public:
 
     ros::Subscriber subLaserCloudInfo;
+    ros::Subscriber sub3dBoxInfo;
 
     ros::Publisher pubLaserCloudInfo;
     ros::Publisher pubCornerPoints;
@@ -37,9 +43,15 @@ public:
     int *cloudNeighborPicked;
     int *cloudLabel;
 
+    // Bounding Box Info
+    std::vector<Eigen::Vector4f> min_points;
+    std::vector<Eigen::Vector4f> max_points;
+    std::vector<Eigen::Affine3f> transforms;
+
     FeatureExtraction()
     {
         subLaserCloudInfo = nh.subscribe<lio_sam::cloud_info>("lio_sam/deskew/cloud_info", 1, &FeatureExtraction::laserCloudInfoHandler, this, ros::TransportHints().tcpNoDelay());
+        sub3dBoxInfo = nh.subscribe<jsk_recognition_msgs::BoundingBoxArray>("/detect_3dbox", 1, &FeatureExtraction::bboxInfoHandler, this);
 
         pubLaserCloudInfo = nh.advertise<lio_sam::cloud_info> ("lio_sam/feature/cloud_info", 1);
         pubCornerPoints = nh.advertise<sensor_msgs::PointCloud2>("lio_sam/feature/cloud_corner", 1);
@@ -75,7 +87,48 @@ public:
 
         extractFeatures();
 
+        occludeFeatureFromObject();
+
         publishFeatureCloud();
+    }
+
+    void bboxInfoHandler(const jsk_recognition_msgs::BoundingBoxArray::ConstPtr& msgIn)
+    {
+        min_points.clear();
+        max_points.clear();
+        transforms.clear();
+
+        min_points.resize(msgIn->boxes.size());
+        max_points.resize(msgIn->boxes.size());
+        transforms.resize(msgIn->boxes.size());
+
+        double scale = 1.5;
+        // Save 3d Bounding Box information
+        for (size_t i = 0; i < msgIn->boxes.size(); ++i)
+        {
+            double x = msgIn->boxes[i].pose.position.x;
+            double y = msgIn->boxes[i].pose.position.y;
+            double z = msgIn->boxes[i].pose.position.z;
+
+            double dx = msgIn->boxes[i].dimensions.x * scale;
+            double dy = msgIn->boxes[i].dimensions.y * scale;
+            double dz = msgIn->boxes[i].dimensions.z * scale;
+
+            // Convert the Quaternion to Euler angles
+            geometry_msgs::Quaternion q = msgIn->boxes[i].pose.orientation;
+            tf2::Quaternion quat(q.x, q.y, q.z, q.w);
+            double roll, pitch, yaw;
+            tf2::Matrix3x3(quat).getRPY(roll, pitch, yaw);
+
+            // Set the parameters of the bounding box
+            min_points[i] << x - dx / 2, y - dy / 2, z - dz / 2, 1.0;
+            max_points[i] << x + dx / 2, y + dy / 2, z + dz / 2, 1.0;
+
+            // Set the rotation angle (angle in radians)
+            transforms[i] = pcl::getTransformation(x, y, z, roll, pitch, yaw);
+        }
+
+        std::cout << "Yeah" << std::endl;
     }
 
     void calculateSmoothness()
@@ -235,6 +288,12 @@ public:
 
             *surfaceCloud += *surfaceCloudScanDS;
         }
+    }
+
+    // occulde features based on 3d bounding box
+    void occludeFeatureFromObject()
+    {
+
     }
 
     void freeCloudInfoMemory()

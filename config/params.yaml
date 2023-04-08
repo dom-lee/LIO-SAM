@@ -24,7 +24,7 @@ lio_sam:
 
   # Sensor Settings
   sensor: velodyne                            # lidar sensor type, 'velodyne' or 'ouster' or 'livox'
-  N_SCAN: 16                                  # number of lidar channel (i.e., Velodyne/Ouster: 16, 32, 64, 128, Livox Horizon: 6)
+  N_SCAN: 64                                  # number of lidar channel (i.e., Velodyne/Ouster: 16, 32, 64, 128, Livox Horizon: 6)
   Horizon_SCAN: 1800                          # lidar horizontal resolution (Velodyne:1800, Ouster:512,1024,2048, Livox Horizon: 4000)
   downsampleRate: 1                           # default: 1. Downsample your data if too many points. i.e., 16 = 64 / 4, 16 = 16 / 1
   lidarMinRange: 1.0                          # default: 1.0, minimum lidar range to be used
@@ -39,13 +39,23 @@ lio_sam:
   imuRPYWeight: 0.01
 
   # Extrinsics: T_lb (lidar -> imu)
-  extrinsicTrans: [0.0, 0.0, 0.0]
-  extrinsicRot: [-1, 0, 0,
-                  0, 1, 0,
-                  0, 0, -1]
-  extrinsicRPY: [0, -1, 0,
-                 1, 0, 0,
-                 0, 0, 1]
+  #extrinsicTrans: [0.0, 0.0, 0.0]
+  #extrinsicRot: [-1, 0, 0,
+                  #0, 1, 0,
+                  #0, 0, -1]
+  #extrinsicRPY: [0, -1, 0,
+                 #1, 0, 0,
+                 #0, 0, 1]
+
+  # for Kitti Dataset
+  extrinsicTrans: [-8.086759e-01, 3.195559e-01, -7.997231e-01]
+  extrinsicRot: [9.999976e-01, 7.553071e-04, -2.035826e-03,
+                 -7.854027e-04, 9.998898e-01, -1.482298e-02,
+                 2.024406e-03, 1.482454e-02, 9.998881e-01]
+  extrinsicRPY: [9.999976e-01, 7.553071e-04, -2.035826e-03,
+                 -7.854027e-04, 9.998898e-01, -1.482298e-02,
+                 2.024406e-03, 1.482454e-02, 9.998881e-01]
+
   # extrinsicRot: [1, 0, 0,
   #                 0, 1, 0,
   #                 0, 0, 1]
