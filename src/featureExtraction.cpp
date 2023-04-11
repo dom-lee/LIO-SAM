@@ -43,9 +43,11 @@ public:
     int *cloudNeighborPicked;
     int *cloudLabel;
 
+    std::mutex mtx;
+    
     // Bounding Box Info
-    std::vector<Eigen::Vector4f> min_points;
-    std::vector<Eigen::Vector4f> max_points;
+    std::vector<Eigen::Vector3f> min_points;
+    std::vector<Eigen::Vector3f> max_points;
     std::vector<Eigen::Affine3f> transforms;
 
     FeatureExtraction()
@@ -102,7 +104,7 @@ public:
         max_points.resize(msgIn->boxes.size());
         transforms.resize(msgIn->boxes.size());
 
-        double scale = 1.5;
+        double scale = 2.0;
         // Save 3d Bounding Box information
         for (size_t i = 0; i < msgIn->boxes.size(); ++i)
         {
@@ -121,14 +123,12 @@ public:
             tf2::Matrix3x3(quat).getRPY(roll, pitch, yaw);
 
             // Set the parameters of the bounding box
-            min_points[i] << x - dx / 2, y - dy / 2, z - dz / 2, 1.0;
-            max_points[i] << x + dx / 2, y + dy / 2, z + dz / 2, 1.0;
+            min_points[i] << -dx / 2, -dy / 2, -dz / 2;
+            max_points[i] <<  dx / 2,  dy / 2,  dz / 2;
 
             // Set the rotation angle (angle in radians)
-            transforms[i] = pcl::getTransformation(x, y, z, roll, pitch, yaw);
+            transforms[i] = pcl::getTransformation(x, y, z, roll, pitch, yaw).inverse();
         }
-
-        std::cout << "Yeah" << std::endl;
     }
 
     void calculateSmoothness()
@@ -290,10 +290,53 @@ public:
         }
     }
 
+    bool isPointInsideBoundingBox(const PointType& point)
+    {
+        for (size_t i = 0; i < min_points.size(); ++i)
+        {
+            Eigen::Vector4f pt(point.x, point.y, point.z, 1.0);
+            Eigen::Vector4f transformed_pt = transforms[i] * pt;
+
+            if (transformed_pt.x() > min_points[i].x() &&
+                transformed_pt.y() > min_points[i].y() &&
+                transformed_pt.z() > min_points[i].z() &&
+                transformed_pt.x() < max_points[i].x() &&
+                transformed_pt.y() < max_points[i].y() &&
+                transformed_pt.z() < max_points[i].z())
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     // occulde features based on 3d bounding box
     void occludeFeatureFromObject()
     {
+        pcl::PointCloud<PointType>::Ptr cornerCloudFiltered(new pcl::PointCloud<PointType>());
+        pcl::PointCloud<PointType>::Ptr surfaceCloudFiltered(new pcl::PointCloud<PointType>());
 
+        std::lock_guard<std::mutex> lock(mtx);
+
+        for (const auto& point : *cornerCloud)
+        {
+            if (!isPointInsideBoundingBox(point))
+            {
+                cornerCloudFiltered->push_back(point);
+            }
+        }
+
+        for (const auto& point : *surfaceCloud)
+        {
+            if (!isPointInsideBoundingBox(point))
+            {
+                surfaceCloudFiltered->push_back(point);
+            }
+        }
+
+        cornerCloud = cornerCloudFiltered;
+        surfaceCloud = surfaceCloudFiltered;
     }
 
     void freeCloudInfoMemory()
