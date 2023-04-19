@@ -104,7 +104,7 @@ public:
         max_points.resize(msgIn->boxes.size());
         transforms.resize(msgIn->boxes.size());
 
-        double scale = 2.0;
+        double scale = 2.5;
         // Save 3d Bounding Box information
         for (size_t i = 0; i < msgIn->boxes.size(); ++i)
         {
