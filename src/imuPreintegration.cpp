@@ -371,7 +371,7 @@ public:
       sensor_msgs::Imu *thisImu = &imuQueOpt.front();
       double imuTime = ROS_TIME(thisImu);
       if (imuTime < currentCorrectionTime - delta_t) {
-        double dt = (lastImuT_opt < 0) ? (1.0 / 500.0) : (imuTime - lastImuT_opt);
+        double dt = (lastImuT_opt < 0) ? (1.0 / imuRate) : (imuTime - lastImuT_opt);
         imuIntegratorOpt_->integrateMeasurement(
             gtsam::Vector3(thisImu->linear_acceleration.x,
                            thisImu->linear_acceleration.y,
@@ -443,7 +443,7 @@ public:
       for (int i = 0; i < (int)imuQueImu.size(); ++i) {
         sensor_msgs::Imu *thisImu = &imuQueImu[i];
         double imuTime = ROS_TIME(thisImu);
-        double dt = (lastImuQT < 0) ? (1.0 / 500.0) : (imuTime - lastImuQT);
+        double dt = (lastImuQT < 0) ? (1.0 / imuRate) : (imuTime - lastImuQT);
 
         imuIntegratorImu_->integrateMeasurement(
             gtsam::Vector3(thisImu->linear_acceleration.x,
@@ -492,7 +492,7 @@ public:
       return;
 
     double imuTime = ROS_TIME(&thisImu);
-    double dt = (lastImuT_imu < 0) ? (1.0 / 500.0) : (imuTime - lastImuT_imu);
+    double dt = (lastImuT_imu < 0) ? (1.0 / imuRate) : (imuTime - lastImuT_imu);
     lastImuT_imu = imuTime;
 
     // integrate this single imu message

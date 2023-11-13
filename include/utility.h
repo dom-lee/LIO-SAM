@@ -97,6 +97,7 @@ public:
   float lidarMaxRange;
 
   // IMU
+  float imuRate;
   float imuAccNoise;
   float imuGyrNoise;
   float imuAccBiasN;
@@ -193,6 +194,7 @@ public:
     nh.param<float>("lio_sam/lidarMinRange", lidarMinRange, 1.0);
     nh.param<float>("lio_sam/lidarMaxRange", lidarMaxRange, 1000.0);
 
+    nh.param<float>("lio_sam/imuRate", imuRate, 500.0);
     nh.param<float>("lio_sam/imuAccNoise", imuAccNoise, 0.01);
     nh.param<float>("lio_sam/imuGyrNoise", imuGyrNoise, 0.001);
     nh.param<float>("lio_sam/imuAccBiasN", imuAccBiasN, 0.0002);
