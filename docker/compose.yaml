@@ -1,0 +1,35 @@
+services:
+  liosam:
+    image: liosam-ros2:${ROS_DISTRO:-humble}
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+      args:
+        ROS_DISTRO: ${ROS_DISTRO:-humble}
+        GTSAM_TAG: ${GTSAM_TAG:-4.2.0}
+    network_mode: host
+    privileged: true
+    stdin_open: true
+    tty: true
+    gpus: all
+
+    environment:
+      ROS_DISTRO: ${ROS_DISTRO:-humble}
+      DISPLAY: ${DISPLAY}
+      XAUTHORITY: ${XAUTHORITY:-$HOME/.Xauthority}
+      QT_X11_NO_MITSHM: "1"
+      XDG_RUNTIME_DIR: /tmp/runtime-root
+      NVIDIA_VISIBLE_DEVICES: all
+      NVIDIA_DRIVER_CAPABILITIES: all
+      USE_TMUX: "1"
+      TMUX_SESSION: liosam
+
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - ${XAUTHORITY:-$HOME/.Xauthority}:${XAUTHORITY:-$HOME/.Xauthority}:ro
+      - ../:/root/ros2_ws/src/liosam:rw
+      - ./.liosam_cache/${ROS_DISTRO:-humble}/build:/root/ros2_ws/build:rw
+      - ./.liosam_cache/${ROS_DISTRO:-humble}/install:/root/ros2_ws/install:rw
+      - ./.liosam_cache/${ROS_DISTRO:-humble}/log:/root/ros2_ws/log:rw
+
+    command: ["bash", "-lc", "tmux new -A -s liosam"]

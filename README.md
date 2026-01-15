@@ -15,33 +15,24 @@
 
 ## Menu
 
-  - [**System architecture**](#system-architecture)
-
-  - [**Notes on ROS2 branch**](#notes-on-ros2-branch)
-
-  - [**Package dependency**](#dependency)
-
-  - [**Package install**](#install)
-
-  - [**Prepare lidar data**](#prepare-lidar-data) (must read)
-
-  - [**Prepare IMU data**](#prepare-imu-data) (must read)
-
-  - [**Sample datasets**](#sample-datasets)
-
-  - [**Run the package**](#run-the-package)
-
-  - [**Other notes**](#other-notes)
-
-  - [**Issues**](#issues)
-
-  - [**Paper**](#paper)
-
-  - [**TODO**](#todo)
-
-  - [**Related Package**](#related-package)
-
-  - [**Acknowledgement**](#acknowledgement)
+- [LIO-SAM](#lio-sam)
+  - [Menu](#menu)
+  - [System architecture](#system-architecture)
+  - [Notes on ROS2 branch](#notes-on-ros2-branch)
+  - [Dependencies](#dependencies)
+  - [Install](#install)
+  - [Using Docker](#using-docker)
+  - [Prepare lidar data](#prepare-lidar-data)
+  - [Prepare IMU data](#prepare-imu-data)
+  - [Sample datasets](#sample-datasets)
+  - [Run the package](#run-the-package)
+  - [Save map](#save-map)
+  - [Other notes](#other-notes)
+  - [Issues](#issues)
+  - [Paper](#paper)
+  - [TODO](#todo)
+  - [Related Package](#related-package)
+  - [Acknowledgement](#acknowledgement)
 
 ## System architecture
 
@@ -102,7 +93,8 @@ Use the following commands to download and compile the package.
 Build image (based on ROS2 Humble):
 
 ```
-docker build -t liosam-humble-jammy .
+ROS_DISTRO=humble docker compose -f docker/compose.yaml build
+ROS_DISTRO=jazzy docker compose -f docker/compose.yaml build
 ```
 
 Once you have the image, you can start a container by using one of the following methods:
@@ -110,35 +102,10 @@ Once you have the image, you can start a container by using one of the following
 1. `docker run`
 
 ```
-docker run --init -it -d \
-  --name liosam-humble-jammy-container \
-  -v /etc/localtime:/etc/localtime:ro \
-  -v /etc/timezone:/etc/timezone:ro \
-  -v /tmp/.X11-unix:/tmp/.X11-unix \
-  -e DISPLAY=$DISPLAY \
-  --runtime=nvidia --gpus all \
-  liosam-humble-jammy \
-  bash
+ROS_DISTRO=humble docker compose -f docker/compose.yaml run --rm liosam
+ROS_DISTRO=jazzy docker compose -f docker/compose.yaml run --rm liosam
 ```
 
-2. `docker compose`
-
-Start a docker compose container:
-
-```
-docker compose up -d
-```
-
-Stopping a docker compose container:
-```
-docker compose down
-```
-
-To enter into the running container use:
-
-```
-docker exec -it liosam-humble-jammy-container bash
-```
 ## Prepare lidar data
 
 The user needs to prepare the point cloud data in the correct format for cloud deskewing, which is mainly done in "imageProjection.cpp". The two requirements are:
