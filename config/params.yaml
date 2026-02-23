@@ -2,8 +2,8 @@
   ros__parameters:
 
     # Topics
-    pointCloudTopic: "/points"                   # Point cloud data
-    imuTopic: "/imu/data"                        # IMU data
+    pointCloudTopic: "/lonebot/sensors/ouster/points"                   # Point cloud data
+    imuTopic: "/lonebot/sensors/microstrain/imu/data"                        # IMU data
     odomTopic: "odometry/imu"                    # IMU pre-preintegration odometry, same frequency as IMU
     gpsTopic: "odometry/gpsz"                    # GPS odometry topic from navsat, see module_navsat.launch file
 
@@ -29,8 +29,8 @@
     Horizon_SCAN: 512                            # lidar horizontal resolution (Velodyne:1800, Ouster:512,1024,2048, Livox Horizon: 4000)
     downsampleRate: 1                            # default: 1. Downsample your data if too many
     # points. i.e., 16 = 64 / 4, 16 = 16 / 1
-    lidarMinRange: 1.0                           # default: 1.0, minimum lidar range to be used
-    lidarMaxRange: 1000.0                        # default: 1000.0, maximum lidar range to be used
+    lidarMinRange: 3.0                           # default: 1.0, minimum lidar range to be used
+    lidarMaxRange: 100.0                        # default: 1000.0, maximum lidar range to be used
 
     # IMU Settings
     imuAccNoise: 3.9939570888238808e-03
@@ -40,14 +40,13 @@
 
     imuGravity: 9.80511
     imuRPYWeight: 0.01
-
-    extrinsicTrans:  [ 0.0,  0.0,  0.0 ]
-    extrinsicRot:    [-1.0,  0.0,  0.0,
-                       0.0,  1.0,  0.0,
-                       0.0,  0.0, -1.0 ]
-    extrinsicRPY: [ 0.0,  1.0,  0.0,
-                   -1.0,  0.0,  0.0,
-                    0.0,  0.0,  1.0 ]
+    extrinsicTrans: [-0.0521542, -0.01002444, -0.3305361]
+    extrinsicRot: [-0.99992653,-0.00336836, 0.01164441,
+                    0.00344102,-0.99997470, 0.00622555,
+                    0.01162316, 0.00626516, 0.99991282]
+    extrinsicRPY: [-0.99992653,-0.00336836, 0.01164441,
+                    0.00344102,-0.99997470, 0.00622555,
+                    0.01162316, 0.00626516, 0.99991282]
 
     # LOAM feature threshold
     edgeThreshold: 1.0
@@ -76,7 +75,7 @@
     # (when loop closure disabled)
 
     # Loop closure
-    loopClosureEnableFlag: true
+    loopClosureEnableFlag: false
     loopClosureFrequency: 1.0                     # Hz, regulate loop closure constraint add frequency
     surroundingKeyframeSize: 50                   # submap size (when loop closure enabled)
     historyKeyframeSearchRadius: 15.0             # meters, key frame that is within n meters from
