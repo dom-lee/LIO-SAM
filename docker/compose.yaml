@@ -1,6 +1,8 @@
+name: liosam
+
 services:
   liosam:
-    image: liosam-ros2:${ROS_DISTRO:-humble}
+    image: liosam:${ROS_DISTRO:-humble}
     build:
       context: ..
       dockerfile: docker/Dockerfile
